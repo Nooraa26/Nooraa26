@@ -1,0 +1,32 @@
+from bs4 import BeautifulSoup
+import requests
+import pandas as pd
+
+url = "https://disfold.com/united-states/companies/?page=1"
+page = requests.get(url)
+soup = BeautifulSoup(page.text, 'html.parser')
+
+# Find the table with the class 'striped'
+table = soup.find('table', class_='striped')
+
+# Find all rows within the table
+rows = table.find_all('tr')
+
+# Extract column titles
+world_titles = rows[0].find_all('th')
+world_table_titles = [title.text.strip() for title in world_titles]
+
+# Create an empty DataFrame with the extracted column titles
+df = pd.DataFrame(columns=world_table_titles)
+column_data = table.find_all('tr')
+
+# Iterate through rows, starting from the second row (index 1) since the first row contains headers
+for row in rows[1:]:
+    # Extract data from each row
+    row_data = [data.text.strip() for data in row.find_all('td')]
+    
+    # Append the row data to the DataFrame
+    df = df.append(dict(zip(world_table_titles, row_data)), ignore_index=True)
+
+# Print the DataFrame
+print(df)
